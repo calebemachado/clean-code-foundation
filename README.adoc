@@ -1,5 +1,10 @@
 = Clean-code-foundation
 
+This project aims to reflect the project used by Rodrigo Branas but implementing with Kotlin and Vert.x + Coroutines
+
+https://github.com/rodrigobranas/cccat13_1/tree/master[Here] you can find the code for the first class written in Javascript + Express
+
+
 image:https://img.shields.io/badge/vert.x-4.4.5-purple.svg[link="https://vertx.io"]
 
 This application was generated using http://start.vertx.io
@@ -52,7 +57,7 @@ And finally, check the table was created:
 select * from cccat.account;
 ```
 
-The result show be like that:
+The result should be like that:
 
 image::table_account_created.png[]
 
