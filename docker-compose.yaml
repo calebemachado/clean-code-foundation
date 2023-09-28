@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13-alpine
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: app
+    volumes:
+      - ./data:/var/lib/postgresql/data\
+      - ./db/migrations:/docker-entrypoint-initdb.d
+    command:
+      - docker-entrypoint.sh
+      - postgres
+      - -c
+      - 'max_locks_per_transaction=128'
