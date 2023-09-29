@@ -1,4 +1,4 @@
-package dev.clsax.clean_code_foundation.before
+package dev.clsax.cleancodefoundation.before
 
 import io.vertx.core.Vertx
 import io.vertx.kotlin.coroutines.await
@@ -17,54 +17,51 @@ class AccountService(private val vertx: Vertx) {
   }
 
   fun validateCpf(str: String): Boolean {
-    if (str != null) {
-      if (str.length >= 11 && str.length <= 14) {
+    if (str.length >= 11 && str.length <= 14) {
 
-        var str = str
-          .replace(".", "")
-          .replace(".", "")
-          .replace("-", "")
-          .replace(" ", "")
+      var str = str
+        .replace(".", "")
+        .replace("-", "")
+        .replace(" ", "")
 
-        if (!str.all { it == str[0] }) {
-          try {
-            var d1: Int
-            var d2: Int
-            var dg1: Int
-            var dg2: Int
-            var rest: Int
-            var digito: Int
-            var nDigResult: String
-            d1 = 0
-            d2 = 0
-            dg1 = 0
-            dg2 = 0
-            rest = 0
+      if (!str.all { it == str[0] }) {
+        try {
+          var d1: Int
+          var d2: Int
+          var dg1: Int
+          var dg2: Int
+          var rest: Int
+          var digito: Int
+          var nDigResult: String
+          d1 = 0
+          d2 = 0
+          dg1 = 0
+          dg2 = 0
+          rest = 0
 
-            for (nCount in 1 until str.length - 1) {
-              val digito = str[nCount - 1].toString().toInt()
-              d1 += (11 - nCount) * digito
-              d2 += (12 - nCount) * digito
-            }
-
-            rest = (d1 % 11)
-
-            dg1 = if (rest < 2) 0 else (11 - rest);
-
-            d2 += 2 * dg1
-            rest = (d2 % 11)
-            if (rest < 2) dg2 = 0
-            else dg2 = 11 - rest
-
-            var nDigVerific = str.substring(str.length - 2, str.length)
-            nDigResult = "$dg1$dg2"
-            return nDigVerific == nDigResult
-          } catch (e: Exception) {
-            println("Erro ! $e")
-
-            return false
+          for (nCount in 1 until str.length - 1) {
+            val digito = str[nCount - 1].toString().toInt()
+            d1 += (11 - nCount) * digito
+            d2 += (12 - nCount) * digito
           }
-        } else return false
+
+          rest = (d1 % 11)
+
+          dg1 = if (rest < 2) 0 else (11 - rest);
+
+          d2 += 2 * dg1
+          rest = (d2 % 11)
+          if (rest < 2) dg2 = 0
+          else dg2 = 11 - rest
+
+          var nDigVerific = str.substring(str.length - 2, str.length)
+          nDigResult = "$dg1$dg2"
+          return nDigVerific == nDigResult
+        } catch (e: Exception) {
+          println("Erro ! $e")
+
+          return false
+        }
       } else return false
     } else return false
   }
@@ -92,20 +89,20 @@ class AccountService(private val vertx: Vertx) {
       val account = if (rows.iterator().hasNext()) {
           val next = rows.iterator().next()
         Account(
-          next.getString("id"),
+          next.getUUID("account_id"),
           next.getString("name")
           )
       } else {
         null
       }
 
-      if (account != null) {
-        if (input.name.matches(Regex("/[a-zA-Z] [a-zA-Z]+/"))) {
-          if (input.email.matches(Regex("/^(.+)@(.+)\$/"))) {
+      if (account == null) {
+        if (input.name.matches(Regex("[a-zA-Z]+ [a-zA-Z]+"))) {
+          if (input.email.matches(Regex("^(.+)@(.+)\$"))) {
 
             if (validateCpf(input.cpf)) {
               if (input.isDriver) {
-                if (input.carPlate.matches(Regex(""))) {
+                if (input.carPlate.matches(Regex("[A-Z]{3}[0-9]{4}"))) {
                   client.preparedQuery("insert into cccat13.account (account_id, name, email, cpf, car_plate, is_passenger, is_driver, date, is_verified, verification_code) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)")
                     .execute(Tuple.of(accountId, input.name, input.email, input.cpf, input.carPlate, !!input.isPassenger, !!input.isDriver, date, false, verificationCode))
                     .await()
@@ -140,7 +137,7 @@ class AccountService(private val vertx: Vertx) {
     return SignUpResponse(accountId)
   }
 
-  suspend fun getAccount(accountId: String): Account? {
+  suspend fun getAccount(accountId: UUID): Account? {
     val connectOptions = PgConnectOptions()
       .setPort(5432)
       .setHost("localhost")
@@ -158,7 +155,7 @@ class AccountService(private val vertx: Vertx) {
     return if (rows.iterator().hasNext()) {
       val next = rows.iterator().next()
       Account(
-        next.getString("id"),
+        next.getUUID("account_id"),
         next.getString("name")
       )
     } else null
