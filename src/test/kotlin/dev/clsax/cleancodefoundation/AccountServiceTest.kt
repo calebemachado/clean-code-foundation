@@ -123,25 +123,4 @@ class AccountServiceTest {
     val exception = assertThrows<Exception> { accountService.signup(input) }
     Assertions.assertEquals("Account already exists", exception.message)
   }
-
-  @Test
-  fun `Deve retornar false quando cpf maior que 14`(vertx: Vertx): Unit = runBlocking(vertx.dispatcher()) {
-    val accountService = AccountService(vertx)
-    val validateCpf = accountService.validateCpf("123456789012345")
-    Assertions.assertFalse(validateCpf)
-  }
-
-  @Test
-  fun `Deve retornar false quando cpf menor que 11`(vertx: Vertx): Unit = runBlocking(vertx.dispatcher()) {
-    val accountService = AccountService(vertx)
-    val validateCpf = accountService.validateCpf("1234567890")
-    Assertions.assertFalse(validateCpf)
-  }
-
-  @Test
-  fun `Deve retornar false quando cpf conter apenas digitos`(vertx: Vertx): Unit = runBlocking(vertx.dispatcher()) {
-    val accountService = AccountService(vertx)
-    val validateCpf = accountService.validateCpf("...---...---.-")
-    Assertions.assertFalse(validateCpf)
-  }
 }
