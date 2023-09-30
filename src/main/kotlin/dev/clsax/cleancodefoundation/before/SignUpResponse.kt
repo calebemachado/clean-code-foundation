@@ -1,4 +1,4 @@
-package dev.clsax.clean_code_foundation.before
+package dev.clsax.cleancodefoundation.before
 
 import java.util.UUID
 
