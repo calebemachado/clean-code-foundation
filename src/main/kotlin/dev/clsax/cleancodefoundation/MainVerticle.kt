@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import dev.clsax.cleancodefoundation.before.AccountService
+import dev.clsax.cleancodefoundation.before.Input
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.core.http.httpServerOptionsOf
-import io.vertx.kotlin.core.json.json
-import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import java.util.concurrent.TimeUnit
@@ -27,28 +27,13 @@ class MainVerticle : CoroutineVerticle() {
   }
 
   override suspend fun start() {
-    val router = routes()
-
-    router.route().handler { context ->
-      val address = context.request().connection().remoteAddress().toString()
-      val queryParams = context.queryParams()
-      val name = queryParams.get("name") ?: "unknown"
-      context.json(
-        json {
-          obj(
-            "name" to name,
-            "address" to address,
-            "message" to "Hello $name connected from $address"
-          )
-        }
-      )
-    }
-
+    val router = Router.router(vertx)
     val accountService = AccountService(vertx)
+    val accountRoutes = accountRoutes(router, accountService)
 
     val options = httpServerOptionsOf(idleTimeout = 5, idleTimeoutUnit = TimeUnit.MINUTES, logActivity = true)
     vertx.createHttpServer(options)
-      .requestHandler(router)
+      .requestHandler(accountRoutes)
       .listen(8888)
       .onComplete { println("HttpSever started at ${it.result().actualPort()}") }
       .await()
@@ -58,10 +43,20 @@ class MainVerticle : CoroutineVerticle() {
     super.stop()
   }
 
-  private suspend fun routes(): Router {
-    val router = Router.router(vertx)
-
-    router.get("/hello").handler { it.response().end("Hello from my route") }
+  private suspend fun accountRoutes(router: Router, accountService: AccountService): Router {
+    router.post("/accounts")
+      .consumes("application/json")
+      .handler(BodyHandler.create())
+      .coroutineHandler {
+        val body = it.body().asJsonObject()
+        val (name, email, cpf, isPassenger, carplate, isDriver) = body.mapTo(Input::class.java)
+        val signUpResponse = accountService.signup(Input(name, email, cpf, isPassenger, carplate, isDriver))
+        it.response()
+          .putHeader("Location", "/accounts/${signUpResponse.accountId}")
+          .setStatusCode(201)
+          .end()
+          .await()
+      }
 
     return router
   }
