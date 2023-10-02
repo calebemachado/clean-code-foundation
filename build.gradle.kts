@@ -1,11 +1,15 @@
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.api.tasks.testing.logging.TestLogEvent.*
+import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   kotlin ("jvm") version "1.7.21"
   application
   id("com.github.johnrengelman.shadow") version "7.1.2"
+  kotlin("plugin.serialization") version "1.9.0"
 }
 
 group = "dev.clsax"
@@ -31,18 +35,19 @@ application {
 dependencies {
   implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
   implementation("io.vertx:vertx-web")
+  implementation("io.vertx:vertx-web-client")
   implementation("io.vertx:vertx-lang-kotlin")
-  implementation("io.netty:netty-resolver-dns-native-macos")
   implementation(kotlin("stdlib-jdk8"))
   implementation("io.netty:netty-resolver-dns-native-macos:4.1.77.Final:osx-x86_64")
   implementation("io.vertx:vertx-pg-client:4.4.5")
   implementation("io.vertx:vertx-lang-kotlin-coroutines")
   implementation("com.fasterxml.jackson.core:jackson-databind")
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-//  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
-//  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm")
+  testImplementation("com.squareup.okhttp3:mockwebserver:4.10.0")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1")
 }
 
 val compileKotlin: KotlinCompile by tasks
