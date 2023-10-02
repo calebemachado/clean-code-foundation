@@ -3,7 +3,7 @@ package dev.clsax.cleancodefoundation.before
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Input(
+data class SignupInput(
   var name: String,
   var email: String,
   var cpf: String,

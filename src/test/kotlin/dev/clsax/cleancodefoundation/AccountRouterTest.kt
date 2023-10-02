@@ -1,6 +1,6 @@
 package dev.clsax.cleancodefoundation
 
-import dev.clsax.cleancodefoundation.before.Input
+import dev.clsax.cleancodefoundation.before.SignupInput
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.ext.web.client.HttpResponse
@@ -42,8 +42,8 @@ class AccountRouterTest {
 
   @Test
   fun `Deve criar um passageiro`(vertx: Vertx): Unit = runBlocking(vertx.dispatcher()) {
-    val input =
-      Input(name = "John Doe", email = "john.doe${Math.random()}@gmail.com", cpf = "272.751.500-69", isPassenger = true)
+    val signupInput =
+      SignupInput(name = "John Doe", email = "john.doe${Math.random()}@gmail.com", cpf = "272.751.500-69", isPassenger = true)
     runBlocking(vertx.dispatcher()) {
       val postResult = awaitResult<HttpResponse<Buffer>> {
         client
@@ -51,10 +51,10 @@ class AccountRouterTest {
           .send {
             json {
               obj(
-                "name" to input.name,
-                "email" to input.email,
-                "cpf" to input.cpf,
-                "isPassenger" to input.isPassenger
+                "name" to signupInput.name,
+                "email" to signupInput.email,
+                "cpf" to signupInput.cpf,
+                "isPassenger" to signupInput.isPassenger
               )
             }
           }
@@ -69,7 +69,7 @@ class AccountRouterTest {
 
       Assertions.assertNotNull(account)
       Assertions.assertNotNull(account.getString("accountId"))
-      Assertions.assertEquals(input.name, account.getString("name"))
+      Assertions.assertEquals(signupInput.name, account.getString("name"))
     }
   }
 }

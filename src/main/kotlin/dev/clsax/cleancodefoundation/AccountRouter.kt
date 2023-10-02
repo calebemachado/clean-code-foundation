@@ -1,7 +1,7 @@
 package dev.clsax.cleancodefoundation
 
 import dev.clsax.cleancodefoundation.before.AccountService
-import dev.clsax.cleancodefoundation.before.Input
+import dev.clsax.cleancodefoundation.before.SignupInput
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import kotlinx.serialization.encodeToString
@@ -17,8 +17,8 @@ class AccountRouter(
     router.post("/accounts")
       .consumes("application/json")
       .coroutineHandler {
-        val (name, email, cpf, isPassenger, carplate, isDriver) = Json.decodeFromString<Input>(it.body().asString())
-        val signUpResponse = accountService.signup(Input(name, email, cpf, isPassenger, carplate, isDriver))
+        val (name, email, cpf, isPassenger, carplate, isDriver) = Json.decodeFromString<SignupInput>(it.body().asString())
+        val signUpResponse = accountService.signup(SignupInput(name, email, cpf, isPassenger, carplate, isDriver))
         it.response()
           .putHeader("Location", "/accounts/${signUpResponse.accountId}")
           .setStatusCode(201)
