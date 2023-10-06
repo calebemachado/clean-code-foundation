@@ -17,7 +17,9 @@ class AccountRouter(
     router.post("/accounts")
       .consumes("application/json")
       .coroutineHandler {
-        val (name, email, cpf, isPassenger, carplate, isDriver) = Json.decodeFromString<SignupInput>(it.body().asString())
+        val (name, email, cpf, isPassenger, carplate, isDriver) = Json.decodeFromString<SignupInput>(
+          it.body().asString()
+        )
         val signUpResponse = accountService.signup(SignupInput(name, email, cpf, isPassenger, carplate, isDriver))
         it.response()
           .putHeader("Location", "/accounts/${signUpResponse.accountId}")
