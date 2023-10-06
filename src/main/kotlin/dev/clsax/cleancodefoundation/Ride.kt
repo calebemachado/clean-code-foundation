@@ -1,4 +1,4 @@
-package dev.clsax.cleancodefoundation.before
+package dev.clsax.cleancodefoundation
 
 import java.time.LocalDateTime
 import java.util.*

@@ -1,6 +1,5 @@
 package dev.clsax.cleancodefoundation
 
-import dev.clsax.cleancodefoundation.before.SignupInput
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.ext.web.client.HttpResponse
@@ -43,7 +42,12 @@ class AccountRouterTest {
   @Test
   fun `Deve criar um passageiro`(vertx: Vertx): Unit = runBlocking(vertx.dispatcher()) {
     val signupInput =
-      SignupInput(name = "John Doe", email = "john.doe${Math.random()}@gmail.com", cpf = "272.751.500-69", isPassenger = true)
+      SignupInput(
+        name = "John Doe",
+        email = "john.doe${Math.random()}@gmail.com",
+        cpf = "272.751.500-69",
+        isPassenger = true
+      )
     runBlocking(vertx.dispatcher()) {
       val postResult = awaitResult<HttpResponse<Buffer>> {
         client
