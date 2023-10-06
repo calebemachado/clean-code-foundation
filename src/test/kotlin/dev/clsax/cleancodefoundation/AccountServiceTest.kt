@@ -1,5 +1,6 @@
 package dev.clsax.cleancodefoundation
 
+import dev.clsax.cleancodefoundation.before.AcceptRideInput
 import dev.clsax.cleancodefoundation.before.AccountService
 import dev.clsax.cleancodefoundation.before.RequestRideInput
 import dev.clsax.cleancodefoundation.before.SignupInput
@@ -256,6 +257,93 @@ class AccountServiceTest {
       accountService.requestRide(requestRideInput)
       val exception = assertThrows<Exception> { accountService.requestRide(requestRideInput) }
       Assertions.assertEquals("Passenger informed have a ride ongoing", exception.message)
+    }
+
+  @Test
+  fun `Deve aceitar uma corrida`(vertx: Vertx): Unit = runBlocking(vertx.dispatcher()) {
+    val signupInputPassenger =
+      SignupInput(
+        name = "John Doe",
+        email = "john.doe${Math.random()}@gmail.com",
+        cpf = "272.751.500-69",
+        isPassenger = true
+      )
+    val accountService = AccountService(vertx)
+    val signupResponse = accountService.signup(signupInputPassenger)
+    val requestRideInput =
+      RequestRideInput(signupResponse.accountId, "45.123, -123.456", "-12.3456, 0.789")
+    val requestRideResponse = accountService.requestRide(requestRideInput)
+
+    val signupInputDriver = SignupInput(
+      name = "John Doe",
+      email = "john.doe${Math.random()}@gmail.com",
+      cpf = "272.751.500-69",
+      isDriver = true,
+      carPlate = "AAA9999"
+    )
+    val driverSignupResponse = accountService.signup(signupInputDriver)
+
+    val acceptRideInput = AcceptRideInput(requestRideResponse.rideId, driverSignupResponse.accountId)
+    accountService.acceptRide(acceptRideInput)
+  }
+
+  @Test
+  fun `Nao deve aceitar uma corrida quando o driver informado nao é driver`(vertx: Vertx): Unit =
+    runBlocking(vertx.dispatcher()) {
+      val signupInputPassenger =
+        SignupInput(
+          name = "John Doe",
+          email = "john.doe${Math.random()}@gmail.com",
+          cpf = "272.751.500-69",
+          isPassenger = true
+        )
+      val accountService = AccountService(vertx)
+      val signupResponse = accountService.signup(signupInputPassenger)
+      val requestRideInput =
+        RequestRideInput(signupResponse.accountId, "45.123, -123.456", "-12.3456, 0.789")
+      val requestRideResponse = accountService.requestRide(requestRideInput)
+
+      val signupInputDriver = SignupInput(
+        name = "John Doe",
+        email = "john.doe${Math.random()}@gmail.com",
+        cpf = "272.751.500-69",
+        isDriver = false,
+        carPlate = "AAA9999"
+      )
+      val driverSignupResponse = accountService.signup(signupInputDriver)
+
+      val acceptRideInput = AcceptRideInput(requestRideResponse.rideId, driverSignupResponse.accountId)
+      val exception = assertThrows<Exception> { accountService.acceptRide(acceptRideInput) }
+      Assertions.assertEquals("Account informed is not a driver", exception.message)
+    }
+
+  @Test
+  fun `Nao deve aceitar uma corrida quando status for diferente de requested`(vertx: Vertx): Unit =
+    runBlocking(vertx.dispatcher()) {
+      val signupInputPassenger =
+        SignupInput(
+          name = "John Doe",
+          email = "john.doe${Math.random()}@gmail.com",
+          cpf = "272.751.500-69",
+          isPassenger = true
+        )
+      val accountService = AccountService(vertx)
+      val signupResponse = accountService.signup(signupInputPassenger)
+      val requestRideInput =
+        RequestRideInput(signupResponse.accountId, "45.123, -123.456", "-12.3456, 0.789")
+      val (rideId) = accountService.requestRide(requestRideInput)
+
+      val signupInputDriver = SignupInput(
+        name = "John Driver",
+        email = "john.doe${Math.random()}@gmail.com",
+        cpf = "272.751.500-69",
+        isDriver = true,
+        carPlate = "AAA9999"
+      )
+      val (accountId) = accountService.signup(signupInputDriver)
+
+      val acceptRideInput = AcceptRideInput(rideId, accountId)
+      accountService.acceptRide(acceptRideInput)
     }
 
 }

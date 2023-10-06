@@ -23,7 +23,7 @@ class AccountService(private val vertx: Vertx) {
     println("$email $subject $message")
   }
 
-  suspend fun signup(signupInput: SignupInput): SignUpResponse {
+  suspend fun signup(signupInput: SignupInput): SignupResponse {
     val client = getSqlClient()
     val accountId = UUID.randomUUID()
     try {
@@ -58,7 +58,7 @@ class AccountService(private val vertx: Vertx) {
     } finally {
       client.close()
     }
-    return SignUpResponse(accountId)
+    return SignupResponse(accountId)
   }
 
   suspend fun getAccount(accountId: UUID): Account? {
@@ -67,6 +67,14 @@ class AccountService(private val vertx: Vertx) {
       .execute(Tuple.of(accountId))
       .await()
     return buildAccountFromDatabase(rows)
+  }
+
+  suspend fun getRide(rideId: UUID): Ride? {
+    val client = getSqlClient()
+    val rows = client.preparedQuery("select * from cccat13.ride where ride_id = $1")
+      .execute(Tuple.of(rideId))
+      .await()
+    return buildRideFromDatabase(rows)
   }
 
   private fun getSqlClient(): SqlClient {
@@ -175,5 +183,30 @@ class AccountService(private val vertx: Vertx) {
     return ride
   }
 
+  suspend fun acceptRide(acceptRideInput: AcceptRideInput) {
+    val account = getAccount(acceptRideInput.driverId) ?: throw Exception("Account not found")
+    if (!account.isDriver) throw Exception("Account informed is not a driver")
+    val ride = getRide(acceptRideInput.rideId) ?: throw Exception("Ride not found")
+    if (ride.status != "REQUESTED") throw Exception("Ride status is not REQUESTED")
+    if (!isDriverAvailableToAcceptRide(account.accountId)) throw Exception("Driver is not available")
 
+    updateRideToAccepted(acceptRideInput)
+  }
+
+  private suspend fun isDriverAvailableToAcceptRide(driverId: UUID): Boolean {
+    val client = getSqlClient()
+    val rows = client.preparedQuery("select ride_id from cccat13.ride where driver_id = $1 and status in ('ACCEPTED', 'IN_PROGRESS')")
+      .execute(Tuple.of(driverId))
+      .await()
+    return rows.size() <= 0
+  }
+
+  private suspend fun updateRideToAccepted(acceptRideInput: AcceptRideInput) {
+    val client = getSqlClient()
+    client.preparedQuery("UPDATE cccat13.ride SET driver_id = $1 , status = 'ACCEPTED' WHERE ride_id = $2")
+      .execute(
+        Tuple.of(acceptRideInput.driverId, acceptRideInput.rideId)
+      )
+      .await()
+  }
 }
