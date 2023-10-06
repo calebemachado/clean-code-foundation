@@ -1,7 +1,5 @@
 package dev.clsax.cleancodefoundation
 
-import dev.clsax.cleancodefoundation.before.AccountService
-import dev.clsax.cleancodefoundation.before.SignupInput
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import kotlinx.serialization.encodeToString

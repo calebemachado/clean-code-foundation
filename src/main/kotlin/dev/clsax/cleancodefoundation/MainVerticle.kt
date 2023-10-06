@@ -3,8 +3,6 @@ package dev.clsax.cleancodefoundation
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import dev.clsax.cleancodefoundation.before.AccountService
-import dev.clsax.cleancodefoundation.before.RideService
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler

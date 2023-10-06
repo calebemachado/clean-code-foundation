@@ -1,4 +1,4 @@
-package dev.clsax.cleancodefoundation.before
+package dev.clsax.cleancodefoundation
 
 import io.vertx.core.Vertx
 import java.util.*

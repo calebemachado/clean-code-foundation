@@ -1,7 +1,5 @@
 package dev.clsax.cleancodefoundation
 
-import dev.clsax.cleancodefoundation.before.AccountService
-import dev.clsax.cleancodefoundation.before.SignupInput
 import io.vertx.core.Vertx
 import io.vertx.junit5.VertxExtension
 import io.vertx.kotlin.coroutines.dispatcher

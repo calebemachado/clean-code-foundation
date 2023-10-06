@@ -1,6 +1,5 @@
 package dev.clsax.cleancodefoundation
 
-import dev.clsax.cleancodefoundation.before.SignupInput
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.ext.web.client.HttpResponse
