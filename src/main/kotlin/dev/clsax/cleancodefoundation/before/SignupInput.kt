@@ -1,13 +1,17 @@
 package dev.clsax.cleancodefoundation.before
 
-data class Input(
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class SignupInput(
   var name: String,
   var email: String,
   var cpf: String,
-  var isPassenger: Boolean,
-  var carPlate: String,
-  var isDriver: Boolean
+  var isPassenger: Boolean = false,
+  var carPlate: String = "",
+  var isDriver: Boolean = false
 ) {
+
   constructor(
     name: String,
     email: String,

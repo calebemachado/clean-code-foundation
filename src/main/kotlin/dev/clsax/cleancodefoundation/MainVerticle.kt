@@ -4,14 +4,17 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import dev.clsax.cleancodefoundation.before.AccountService
+import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import java.util.concurrent.TimeUnit
+
 
 class MainVerticle : CoroutineVerticle() {
 
@@ -27,42 +30,46 @@ class MainVerticle : CoroutineVerticle() {
   }
 
   override suspend fun start() {
-    val router = routes()
-
-    router.route().handler { context ->
-      val address = context.request().connection().remoteAddress().toString()
-      val queryParams = context.queryParams()
-      val name = queryParams.get("name") ?: "unknown"
-      context.json(
-        json {
-          obj(
-            "name" to name,
-            "address" to address,
-            "message" to "Hello $name connected from $address"
-          )
-        }
-      )
-    }
-
     val accountService = AccountService(vertx)
+
+    val router = Router.router(vertx)
+    router.route().handler(BodyHandler.create())
+    defaultHandler(router)
+    val accountRoutes = AccountRouter(router, accountService).routes()
 
     val options = httpServerOptionsOf(idleTimeout = 5, idleTimeoutUnit = TimeUnit.MINUTES, logActivity = true)
     vertx.createHttpServer(options)
-      .requestHandler(router)
+      .requestHandler(accountRoutes)
       .listen(8888)
       .onComplete { println("HttpSever started at ${it.result().actualPort()}") }
       .await()
   }
 
-  override suspend fun stop() {
-    super.stop()
-  }
-
-  private suspend fun routes(): Router {
-    val router = Router.router(vertx)
+  private fun defaultHandler(router: Router) {
+    router.route().failureHandler {
+      if (it.failure() is Exception) {
+        it.response()
+          .setStatusCode(404)
+          .end(
+            json {
+              obj(
+                "message" to "${it.failure().message}",
+                "code" to "not_found"
+              )
+            }.toString()
+          )
+      }
+    }
 
     router.get("/hello").handler { it.response().end("Hello from my route") }
+  }
 
-    return router
+  private fun response(response: HttpServerResponse, statusCode: Int, failureMessage: String?) {
+    response.setStatusCode(statusCode).end("Failure calling the RESTful API: $failureMessage")
+  }
+
+
+  override suspend fun stop() {
+    super.stop()
   }
 }
